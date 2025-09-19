@@ -34,6 +34,7 @@ model Video {
   duration  Float 
   expiresAt   DateTime?
   description     String?
+  private   Boolean @default(true)
   owner   User  @relation(fields : [ownerId], references:[id])
   ownerId Int
   createdAt DateTime @default(now())
@@ -43,9 +44,11 @@ model Video {
 model Conversation {
   id        Int   @id @default(autoincrement())
   subject   String?  
+  lastMessage String?
+  unreadMessages Int? 
   users     User[]     @relation("UserConversations")
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now())
   messages  Message[]
 }
 
@@ -54,7 +57,7 @@ model Message {
   content        String
   sender         User         @relation(fields: [senderId], references: [id])
   senderId       Int
-  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  conversation   Conversation @relation(fields: [conversationId], references: [id],onDelete: Cascade)
   conversationId Int
   createdAt      DateTime     @default(now())
 }

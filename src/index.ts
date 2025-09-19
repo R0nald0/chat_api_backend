@@ -10,6 +10,7 @@ import { Server } from 'socket.io';
 import messageRouter from './routes/messageRoute';
 import MessageController from './controller/MessageController';
 import videosRouter from './routes/videosRouter';
+import ConversastionController from './controller/ConversastionController';
 
 const app = express()
 const server = http.createServer(app)
@@ -31,33 +32,44 @@ app.use(AuthMiddleware.vetryToken)
 app.use('', conversationRouter)
 app.use('', userRouter)
 app.use('', messageRouter)
-app.use('',videosRouter);
+app.use('', videosRouter);
 
 const PORT = process.env.PORT || 3000;
+
+const users = new Map();
 
 io.on('connection', (socket) => {
 
   socket.on('joinedConversation', (conversationId) => {
     console.log('User joined Conversation ' + conversationId);
-    socket.join(conversationId); // agora o user entra na sala
+    socket.join(conversationId);
   });
 
-  socket.on('sendMessage', async (message) => {
-    const { conversationId, senderId, content, destinationId, subject } = message;
-    try {
-
-      console.log(`Message from ${senderId} in conversation ${conversationId}: ${content}`); console.log(`Message from ${senderId} in conversation ${conversationId}: ${content} To ${destinationId} with subject ${subject}`);
-
-      if (conversationId === 0) {
-        const createdConversationId = await MessageController.createConversation(senderId, destinationId, subject)
-        const messageSaved  = await MessageController.createMessage(senderId, content, createdConversationId)
-        io.to(createdConversationId.toString()).emit('newMessage', {messageSaved});
-        return
-      }
-        const message  = await MessageController.createMessage(senderId, content, conversationId);
-        const updatedConversation  =await  MessageController.updatedConversation(conversationId,message)
+  socket.on('register',(userId) =>{
+    users.set(userId,socket.id);
     
-      io.to(conversationId).emit('newMessage', message);
+  })
+
+  socket.on('sendMessage', async (message) => {
+    const { conversationId, senderId, content, destinationId, subject, unReadMessage } = message;
+
+    try {
+    
+        const message = await MessageController.createMessage(senderId, content, conversationId);
+        const updatedConversation =  await MessageController.updatedConversation(conversationId, message, senderId)
+        
+        io.to(conversationId).emit('newMessage', message);
+        io.to(conversationId).emit('updateMessage', updatedConversation); 
+      
+
+        const destSokcteId = users.get(destinationId);
+         if (destSokcteId) {
+          io.to(destSokcteId).emit('updateMessage', updatedConversation);
+          
+        } 
+      
+    
+
     } catch (err) {
       console.error('Failed to save message', err);
     }

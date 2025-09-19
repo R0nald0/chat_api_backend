@@ -5,5 +5,7 @@ const userRouter = Router()
 userRouter.get('/users',UserController.findByEmail);
 userRouter.get("/users/:id",UserController.findMyContacts)
 userRouter.put('/users',UserController.addUserToContact)
+userRouter.get("/users/videos/:id",UserController.findStoryOfMyContacts)
+
 
 export default userRouter;

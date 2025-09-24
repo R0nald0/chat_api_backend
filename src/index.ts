@@ -11,6 +11,8 @@ import messageRouter from './routes/messageRoute';
 import MessageController from './controller/MessageController';
 import videosRouter from './routes/videosRouter';
 import ConversastionController from './controller/ConversastionController';
+import uploadsRouter from './routes/uploadRouter';
+import path from 'path';
 
 const app = express()
 const server = http.createServer(app)
@@ -27,12 +29,15 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use('/auth', routes);
+app.use('/uploads',express.static(path. resolve(__dirname,"..",'tmp','uploads','profile')))
+app.use('/uploads/conversation',express.static(path. resolve(__dirname,"..",'tmp','uploads')))
 app.use(AuthMiddleware.vetryToken)
 
 app.use('', conversationRouter)
 app.use('', userRouter)
 app.use('', messageRouter)
-app.use('', videosRouter);
+app.use('', videosRouter)
+app.use('/upload',uploadsRouter);
 
 const PORT = process.env.PORT || 3000;
 
@@ -80,6 +85,6 @@ io.on('connection', (socket) => {
   });
 });
 
-server.listen(PORT, () => {
+server.listen(PORT as number,'0.0.0.0',() => {
   console.log(`Server listen ontem port ${PORT}`)
 })

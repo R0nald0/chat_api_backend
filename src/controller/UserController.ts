@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { Prisma, PrismaClient } from "@prisma/client"
 import { ErrorHandler } from '../models/ErrorHandler'
 
+
 const prisma = new PrismaClient({
     omit: {
         user: {
@@ -17,17 +18,25 @@ class UserController {
                 email: email
             },
         })
-
+            
         if (!user) {
             return res.status(404).json({ message: 'User not Found' })
         }
+        
+       
         res.json(user);
     }
+    async updateUser(req:Request ,res :Response){
+       const {id}  = req.body.user
+        try {
+        //  UserService.update()
+       } catch (error) {
+        
+       }
 
-  
-      
+    }
 
-     async findStoryOfMyContacts(req: Request, res: Response) {
+    async findStoryOfMyContacts(req: Request, res: Response) {
         const { id } = req.params
 
         try {
